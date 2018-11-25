@@ -7,4 +7,4 @@ Comparing models using scikit-learn & matplotlib.
 - Decision Tree 
 - Neural Network
 
-[Figure_1](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/Figure_1.png)
+![Figure_1](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/Figure_1.png)
