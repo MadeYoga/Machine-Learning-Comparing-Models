@@ -23,8 +23,8 @@ os.chdir(datasets_path)
 training_data_filename  = "iris-train.csv"
 test_data_filename      = "iris-test.csv"
 
-# training_data_filename  = "heartdisease-train.csv"
-# test_data_filename      = "heartdisease-test.csv"  
+training_data_filename  = "heartdisease-train.csv"
+test_data_filename      = "heartdisease-test.csv"  
 
 # training_data_filename  = input("input training dataset file name: ")
 # test_data_filename      = input("input test dataset file name : ")
@@ -48,16 +48,33 @@ DT_model.train(X=manager.X_train, Y=manager.Y_train)
 ## INITIAL MULTI-LAYER PERCEPTRON MODEL
 MLP_model = MultiLayerPerceptronModel()
 MLP_model.train(X=manager.X_train, Y=manager.Y_train)
-## PREDICT/TESTING
-GNB_model.predict_y(test_set_x=manager.X_test)
-KNN_model.predict_y(test_set_x=manager.X_test)
-DT_model. predict_y(test_set_x=manager.X_test)
-MLP_model.predict_y(test_set_x=manager.X_test)
 
 scores_KNN = []
 scores_GNB = []
 scores_DT  = []
 scores_MLP = []
+
+## PREDICT/TRAINING
+GNB_model.predict_y(test_set_x=manager.X_train)
+KNN_model.predict_y(test_set_x=manager.X_train)
+DT_model. predict_y(test_set_x=manager.X_train)
+MLP_model.predict_y(test_set_x=manager.X_train)
+print("Training Accuracy with train_test_split approach: ")
+print("KNN : {}%".format(KNN_model.get_accuracy(Y_test=manager.Y_train) * 100))
+print("GNB : {}%".format(GNB_model.get_accuracy(Y_test=manager.Y_train) * 100))
+print("DT  : {}%".format(DT_model .get_accuracy(Y_test=manager.Y_train) * 100))
+print("MLP : {}%".format(MLP_model.get_accuracy(Y_test=manager.Y_train) * 100))
+
+scores_KNN.append(KNN_model.current_accuracy * 100)
+scores_GNB.append(GNB_model.current_accuracy * 100)
+scores_DT .append(DT_model .current_accuracy * 100)
+scores_MLP.append(MLP_model.current_accuracy * 100)
+
+## PREDICT/TESTING
+GNB_model.predict_y(test_set_x=manager.X_test)
+KNN_model.predict_y(test_set_x=manager.X_test)
+DT_model. predict_y(test_set_x=manager.X_test)
+MLP_model.predict_y(test_set_x=manager.X_test)
 
 print("Test Accuracy: ")
 print("KNN : {}%".format(KNN_model.get_accuracy(Y_test=manager.Y_test) * 100))
@@ -86,6 +103,7 @@ for k in k_n_range:
    KNN_model.train(X=manager.X_train, Y=manager.Y_train)
    KNN_model.predict_y(test_set_x=manager.X_test)
    knn_scores.append(KNN_model.get_accuracy(Y_test=manager.Y_test))
+
 ## DT
 DT_model.train(X=manager.X_train, Y=manager.Y_train)
 DT_model.predict_y(test_set_x=manager.X_test)
@@ -94,13 +112,15 @@ MLP_model.train(X=manager.X_train, Y=manager.Y_train)
 MLP_model.predict_y(test_set_x=manager.X_test)
 
 scores_KNN.append(max(knn_scores) * 100)
-scores_GNB.append(GNB_model.get_accuracy(Y_test=manager.Y_train) * 100)
-scores_DT .append(DT_model .current_accuracy * 100)
-scores_MLP.append(MLP_model.current_accuracy * 100)
+scores_GNB.append(GNB_model.get_accuracy(Y_test=manager.Y_test) * 100)
+scores_DT .append(DT_model .get_accuracy(Y_test=manager.Y_test) * 100)
+scores_MLP.append(MLP_model.get_accuracy(Y_test=manager.Y_test) * 100)
 
 print("Training Accuracy with train_test_split approach: ")
-print("KNN : {}%".format(int(max(knn_scores) * 100)))
-print("GNB : {}%".format(int(GNB_model.get_accuracy(Y_test=manager.Y_train) * 100)))
+print("KNN : {}%".format(max(knn_scores) * 100))
+print("GNB : {}%".format(GNB_model.current_accuracy * 100))
+print("DT  : {}%".format(DT_model .current_accuracy * 100))
+print("MLP : {}%".format(MLP_model.current_accuracy * 100))
 
 #################################
 ### CROSS VALIDATION APPROACH ###
@@ -108,26 +128,32 @@ print("GNB : {}%".format(int(GNB_model.get_accuracy(Y_test=manager.Y_train) * 10
 manager = Manager(training_dataset=training_dataset, test_dataset=test_dataset)
 manager.scale_data()
 
+print("Training Accuracy with cross validation approach: ")
 ## cross val StartifiedKFold
 ## KFold
 # kf = KFold(n_splits=10)
-print(cross_val_score(KNN_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-print(cross_val_score(GNB_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-print(cross_val_score(DT_model .model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-print(cross_val_score(MLP_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-scores_KNN.append(cross_val_score(KNN_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-scores_GNB.append(cross_val_score(GNB_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-scores_DT .append(cross_val_score(DT_model.model , manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
-scores_MLP.append(cross_val_score(MLP_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100)
+cvs_knn = cross_val_score(KNN_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
+cvs_gnb = cross_val_score(GNB_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
+cvs_dt  = cross_val_score(DT_model .model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
+cvs_mlp = cross_val_score(MLP_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
+print(cvs_knn)
+print(cvs_gnb)
+print(cvs_dt)
+print(cvs_mlp)
+scores_KNN.append(cvs_knn)
+scores_GNB.append(cvs_gnb)
+scores_DT .append(cvs_dt)
+scores_MLP.append(cvs_mlp)
+
 
 from matplotlib import pyplot as plt
 
-n_groups = 3
+n_groups = 4
 
 ax = plt.subplot()
 index = np.arange(n_groups)
 bar_width = 0.15
-opacity = 0.8
+opacity = 0.5
 
 print(tuple(scores_KNN))
 
@@ -197,10 +223,10 @@ for rect in rects4:
    )
 
 plt.ylim([0, 100])
-plt.xlabel('Model')
+plt.xlabel('Context')
 plt.ylabel('Scores')
 plt.title("Scores by model {}/{} dataset".format(training_data_filename, test_data_filename))
-plt.xticks(index + bar_width * 1.5, ('Testing', 'Train Test Split', 'Cross Validation'))
+plt.xticks(index + bar_width * 1.5, ('Training', 'Testing', 'Train Test Split', 'Cross Validation'))
 plt.legend()
 plt.tight_layout()
 
