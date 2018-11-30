@@ -1,6 +1,12 @@
 # Machine-Learning-Comparing-Models
 Comparing models using scikit-learn & matplotlib.
 
+## Dependencies
+- Numpy
+- Scikit-learn
+- Pandas
+- Matplotlib
+
 ## Models
 - K Nearest Neighbors 
 - Gaussian Naive Bayes 
