@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import sys
@@ -8,7 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 class ClassifierModel:
     def __init__(self):
@@ -40,6 +41,12 @@ class ClassifierModel:
         except ValueError as error:
             error.with_traceback(sys.exc_info()[2])
         return self.current_accuracy
+    
+    def get_confusion_mat(self, Y_test=None):
+        return confusion_matrix(self.current_predicted_y, Y_test)
+
+    def get_f1_score(self, Y_test=None):
+        return f1_score(self.current_predicted_y, Y_test)
 
 class DTreeModel(ClassifierModel):
     def __init__(self):
@@ -150,10 +157,7 @@ datasets_path       = this_script_path + "\\Datasets"
 os.chdir(datasets_path)
 
 training_data_filename  = "iris-train.csv"
-test_data_filename      = "iris-test.csv"
-
-# training_data_filename  = "heartdisease-train.csv"
-# test_data_filename      = "heartdisease-test.csv"  
+test_data_filename      = "iris-test.csv" 
 
 # training_data_filename  = input("input training dataset file name: ")
 # test_data_filename      = input("input test dataset file name : ")
@@ -204,6 +208,18 @@ GNB_model.predict_y(test_set_x=manager.X_test)
 KNN_model.predict_y(test_set_x=manager.X_test)
 DT_model. predict_y(test_set_x=manager.X_test)
 MLP_model.predict_y(test_set_x=manager.X_test)
+
+print("CONFUSION MATRIX :")
+print(GNB_model.get_confusion_mat(Y_test=manager.Y_test))
+print(KNN_model.get_confusion_mat(Y_test=manager.Y_test))
+print(DT_model .get_confusion_mat(Y_test=manager.Y_test))
+print(MLP_model.get_confusion_mat(Y_test=manager.Y_test))
+
+# print("F1-Score :")
+# print(GNB_model.get_f1_score(Y_test=manager.Y_test) * 100)
+# print(KNN_model.get_f1_score(Y_test=manager.Y_test) * 100)
+# print(DT_model .get_f1_score(Y_test=manager.Y_test) * 100)
+# print(MLP_model.get_f1_score(Y_test=manager.Y_test) * 100)
 
 print("Test Accuracy: ")
 print("KNN : {}%".format(KNN_model.get_accuracy(Y_test=manager.Y_test) * 100))

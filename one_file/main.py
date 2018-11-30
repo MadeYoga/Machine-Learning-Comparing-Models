@@ -1,13 +1,151 @@
+
+import os
+import pandas as pd
+import sys
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
+
+class ClassifierModel:
+    def __init__(self):
+        self.model = None
+        self.current_predicted_y = None
+        self.current_accuracy = -1
+
+    def train(self, dataset=None, X=None, Y=None):
+        if not dataset is None and not dataset.empty:
+            X = dataset.loc[:, dataset.columns[:-1]]
+            Y = dataset.loc[:, dataset.columns[-1:]]
+        try:
+            self.model.fit(X, Y.values.ravel())
+        except ValueError as error:
+            raise error.with_traceback(sys.exc_info()[2])
+
+    def predict_y(self, test_set=None, test_set_x=None):
+        if test_set and not test_set.empty:
+            test_set_x = test_set.loc[:, test_set.columns[:-1]]
+        self.current_predicted_y = self.model.predict(test_set_x)
+        return self.current_predicted_y
+
+    def get_predicted_y(self):
+        return self.current_predicted_y
+    
+    def get_accuracy(self, Y_test=None):
+        try:
+            self.current_accuracy = accuracy_score(Y_test, self.current_predicted_y)
+        except ValueError as error:
+            error.with_traceback(sys.exc_info()[2])
+        return self.current_accuracy
+    
+    def get_confusion_mat(self, Y_test=None):
+        return confusion_matrix(self.current_predicted_y, Y_test)
+
+    def get_f1_score(self, Y_test=None):
+        return f1_score(self.current_predicted_y, Y_test)
+
+class DTreeModel(ClassifierModel):
+    def __init__(self):
+        self.model = DecisionTreeClassifier(random_state=0)
+
+class MultiLayerPerceptronModel(ClassifierModel):
+    """ 
+    Multi-layer is sensitive to feature scaling, 
+    so it is highly recommended to scale data.
+    scale each attribute to [0, 1] or [-1, +1]
+    or standardize it to have mean 0 and variance 1.
+    - activation : {‘identity’, ‘logistic’, ‘tanh’, ‘relu’}
+    - solver     : {‘lbfgs’, ‘sgd’, ‘adam’}, default ‘adam’
+        The solver for weight optimization.
+        ‘lbfgs’ is an optimizer in the family of quasi-Newton methods.
+        ‘sgd’ refers to stochastic gradient descent.
+        ‘adam’ refers to a stochastic gradient-based optimizer proposed by Kingma, Diederik, and Jimmy Ba
+    """
+    def __init__(self):
+        
+        self.model = MLPClassifier (
+            solver='lbfgs',
+            alpha=1e-5, # 5 nol dibelakang koma, 0.00005 # learning rate
+            activation='relu', # perceptron activation relu
+            hidden_layer_sizes=(5, 2), 
+            random_state=1,
+        )
+
+class NBGaussModel(ClassifierModel):
+    def __init__(self):
+        self.model = GaussianNB()
+
+class KNeighborsModel(ClassifierModel):
+    def __init__(self, n=5):
+        self.model = KNeighborsClassifier(n_neighbors=n)
+    
+    def set_k(self, n=5):
+        self.model = KNeighborsClassifier(n_neighbors=n)
+
+
+class Manager:
+    def __init__(self, training_dataset=None, test_dataset=None):
+        
+        if training_dataset.empty or test_dataset.empty:
+            abspath             = os.path.abspath(__file__)
+            this_script_path    = os.path.dirname(abspath)
+            datasets_path       = this_script_path + "\\Datasets"
+            os.chdir(datasets_path)
+
+            training_dataset    = pd.read_csv("iris-train.csv")
+            test_dataset        = pd.read_csv("iris-test.csv" )
+        
+        self.training_dataset   = training_dataset
+        self.X_train            = training_dataset.loc[:, training_dataset.columns[:-1]]
+        self.Y_train            = training_dataset.loc[:, training_dataset.columns[-1:]]
+
+        self.test_dataset       = test_dataset
+        self.X_test             = test_dataset.loc[:, test_dataset.columns[:-1]]
+        self.Y_test             = test_dataset.loc[:, test_dataset.columns[-1:]]
+    
+    def scale_data(self):
+        self.X_train = MinMaxScaler().fit_transform(self.X_train)
+        self.X_test  = MinMaxScaler().fit_transform(self.X_test)
+
+        self.X_train = pd.DataFrame(
+            data=self.X_train[0:,0:]
+        )
+
+        self.X_test = pd.DataFrame(
+            data=self.X_test[0:,0:]
+        )
+
+    def do_train_test_split(self):
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
+            self.X_train,
+            self.Y_train,
+            test_size=0.3,
+            random_state=4
+        )
+        
+    def set_training_dataset(self, training_dataset):
+        self.training_dataset   = training_dataset
+        self.X_train            = training_dataset.loc[:, training_dataset.columns[:-1]]
+        self.Y_train            = training_dataset.loc[:, training_dataset.columns[-1:]]
+    
+    def set_test_dataset(self, test_dataset):
+        self.test_dataset       = test_dataset
+        self.X_test             = test_dataset.loc[:, test_dataset.columns[:-1]]
+        self.Y_test             = test_dataset.loc[:, test_dataset.columns[-1:]]
+
+
 """
 * Model : KNeighbors, Gaussian Naive Bayes, 
 * Neural Network model sangat sensitive pada data yg valuenya tidak di scale.
 * Cross Validation score, menggunakan rata-rata
 * Cross Validation, menggunakan Startified KFold, variasi dari KFold
 """
-from Models.Classification.ClassifierModel import KNeighborsModel
-from Models.Classification.ClassifierModel import NBGaussModel
-from Models.Classification.ClassifierModel import DTreeModel
-from Models.Classification.ClassifierModel import MultiLayerPerceptronModel
 from DataManager import Manager
 from sklearn.model_selection import cross_val_score, KFold
 import numpy as np
@@ -19,9 +157,6 @@ this_script_path    = os.path.dirname(abspath)
 datasets_path       = this_script_path + "\\Datasets"
 
 os.chdir(datasets_path)
-
-training_data_filename  = "iris-train.csv"
-test_data_filename      = "iris-test.csv"
 
 training_data_filename  = "heartdisease-train.csv"
 test_data_filename      = "heartdisease-test.csv"  
@@ -76,6 +211,18 @@ KNN_model.predict_y(test_set_x=manager.X_test)
 DT_model. predict_y(test_set_x=manager.X_test)
 MLP_model.predict_y(test_set_x=manager.X_test)
 
+print("CONFUSION MATRIX :")
+print(GNB_model.get_confusion_mat(Y_test=manager.Y_test))
+print(KNN_model.get_confusion_mat(Y_test=manager.Y_test))
+print(DT_model .get_confusion_mat(Y_test=manager.Y_test))
+print(MLP_model.get_confusion_mat(Y_test=manager.Y_test))
+
+print("F1-Score :")
+print(GNB_model.get_f1_score(Y_test=manager.Y_test) * 100)
+print(KNN_model.get_f1_score(Y_test=manager.Y_test) * 100)
+print(DT_model .get_f1_score(Y_test=manager.Y_test) * 100)
+print(MLP_model.get_f1_score(Y_test=manager.Y_test) * 100)
+
 print("Test Accuracy: ")
 print("KNN : {}%".format(KNN_model.get_accuracy(Y_test=manager.Y_test) * 100))
 print("GNB : {}%".format(GNB_model.get_accuracy(Y_test=manager.Y_test) * 100))
@@ -103,7 +250,6 @@ for k in k_n_range:
    KNN_model.train(X=manager.X_train, Y=manager.Y_train)
    KNN_model.predict_y(test_set_x=manager.X_test)
    knn_scores.append(KNN_model.get_accuracy(Y_test=manager.Y_test))
-
 ## DT
 DT_model.train(X=manager.X_train, Y=manager.Y_train)
 DT_model.predict_y(test_set_x=manager.X_test)
@@ -129,9 +275,6 @@ manager = Manager(training_dataset=training_dataset, test_dataset=test_dataset)
 manager.scale_data()
 
 print("Training Accuracy with cross validation approach: ")
-## cross val StartifiedKFold
-## KFold
-# kf = KFold(n_splits=10)
 cvs_knn = cross_val_score(KNN_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
 cvs_gnb = cross_val_score(GNB_model.model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
 cvs_dt  = cross_val_score(DT_model .model, manager.X_train, manager.Y_train.values.ravel(), cv=10).mean() * 100
@@ -145,12 +288,8 @@ scores_GNB.append(cvs_gnb)
 scores_DT .append(cvs_dt)
 scores_MLP.append(cvs_mlp)
 
-from matplotlib import pyplot as plt
 
-plt.plot(k_n_range, knn_scores)
-plt.xlabel("K")
-plt.ylabel("Score")
-plt.show()
+from matplotlib import pyplot as plt
 
 n_groups = 4
 
@@ -234,8 +373,7 @@ plt.xticks(index + bar_width * 1.5, ('Training', 'Testing', 'Train Test Split', 
 plt.legend()
 plt.tight_layout()
 
+# plt.plot(k_n_range, knn_scores)
+# plt.xlabel("K")
+# plt.ylabel("Score")
 plt.show()
-
-
-
-
