@@ -7,4 +7,11 @@ Comparing models using scikit-learn & matplotlib.
 - Decision Tree 
 - Neural Network
 
-![Figure_1](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/Figure_1.png)
+## Iris Scalled
+![h1](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/img/Figure_iris_scalled.png)
+## Iris Not Scalled
+![h2](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/img/Figure_iris.png)
+## Heartdisease Scalled
+![h2](https://raw.githubusercontent.com/MadeYoga/Machine-Learning-Comparing-Models/master/img/Figure_heartdisease_scalled.png)
+## Heartdisease Not Scalled
+![h1](https://github.com/MadeYoga/Machine-Learning-Comparing-Models/blob/master/img/Figure_heartdisease.png)
