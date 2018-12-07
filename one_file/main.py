@@ -139,18 +139,9 @@ class Manager:
         self.X_test             = test_dataset.loc[:, test_dataset.columns[:-1]]
         self.Y_test             = test_dataset.loc[:, test_dataset.columns[-1:]]
 
-
-"""
-* Model : KNeighbors, Gaussian Naive Bayes, 
-* Neural Network model sangat sensitive pada data yg valuenya tidak di scale.
-* Cross Validation score, menggunakan rata-rata
-* Cross Validation, menggunakan Startified KFold, variasi dari KFold
-"""
 from DataManager import Manager
 from sklearn.model_selection import cross_val_score, KFold
 import numpy as np
-import pandas as pd
-import os
 
 abspath             = os.path.abspath(__file__)
 this_script_path    = os.path.dirname(abspath)

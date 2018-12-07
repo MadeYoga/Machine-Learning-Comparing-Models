@@ -147,8 +147,6 @@ class Manager:
 from DataManager import Manager
 from sklearn.model_selection import cross_val_score, KFold
 import numpy as np
-import pandas as pd
-import os
 
 abspath             = os.path.abspath(__file__)
 this_script_path    = os.path.dirname(abspath)
